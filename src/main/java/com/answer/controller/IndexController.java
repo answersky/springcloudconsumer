@@ -1,5 +1,6 @@
 package com.answer.controller;
 
+import com.answer.feign.HelloFeignService;
 import com.answer.service.ValueAnnotateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
@@ -20,14 +21,25 @@ public class IndexController {
     private RestTemplate restTemplate;
     @Autowired
     private LoadBalancerClient loadBalancerClient;
+    @Autowired
+    private HelloFeignService helloFeignService;
+
 
     @RequestMapping("/index")
     @ResponseBody
     public String index(){
+        //RestTemplate在微服务当中与注解@LoadBanlance注解结合使用
         ServiceInstance serviceInstance=loadBalancerClient.choose("cloud-server");
         String url=serviceInstance.getUri()+"/hello?name=aaa";
         restTemplate.getForObject(url,String.class);
         return restTemplate.getForObject(url,String.class);
+    }
+
+    //通过feign方式调用
+    @RequestMapping("/findByFeign")
+    @ResponseBody
+    public String findByFeign(String name){
+        return helloFeignService.index(name);
     }
 
 }
